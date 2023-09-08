@@ -1,13 +1,14 @@
 const UserService = require('./userService')
-
+const { validationResult } = require('express-validator')
 class UserController {
   register = async (req, res, next) => {
-    if (req.validationErrors) {
-      return res.status(400).json({
-        message: 'Error',
-        status: 400,
-        validationErrors: { ...req.validationErrors }
-      })
+    const errors = validationResult(req)
+
+    if (!errors.isEmpty()) {
+      const validationErrors = {}
+
+      errors.array().forEach((error) => (validationErrors[error.path] = error.msg))
+      return res.status(400).send({ validationErrors: validationErrors })
     }
 
     await UserService.save({ ...req.body })

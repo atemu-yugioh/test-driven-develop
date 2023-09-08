@@ -3,31 +3,13 @@ const router = express.Router()
 const userController = require('./userController')
 const asyncHandler = require('../helper/asyncHandler')
 
-const validateUsername = (req, res, next) => {
-  const { username } = req.body
+const { check } = require('express-validator')
 
-  if (!username) {
-    req.validationErrors = {
-      username: 'Username cannot be null'
-    }
-  }
-
-  next()
-}
-
-const validateEmail = (req, res, next) => {
-  const { email } = req.body
-
-  if (!email) {
-    req.validationErrors = {
-      ...req.validationErrors,
-      email: 'Email cannot be null'
-    }
-  }
-
-  next()
-}
-
-router.post('', validateUsername, validateEmail, asyncHandler(userController.register))
+router.post(
+  '',
+  check('username').notEmpty().withMessage('Username cannot be null'),
+  check('email').notEmpty().withMessage('Email cannot be null'),
+  asyncHandler(userController.register)
+)
 
 module.exports = router
