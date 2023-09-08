@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/atemu-yugioh/test-driven-develop#readme",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^4.18.2",
     "nodemon": "^3.0.1",
     "sequelize": "^6.32.1",
