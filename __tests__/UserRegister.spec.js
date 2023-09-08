@@ -59,4 +59,21 @@ describe('User Registration', () => {
         })
       })
   })
+
+  it('Should hashes password in database', (done) => {
+    request(app)
+      .post('/api/v1/users')
+      .send({
+        username: 'user1',
+        email: 'user1@gmail.com',
+        password: 'passUser1'
+      })
+      .then(() => {
+        userModel.findAll().then((userList) => {
+          const savedUser = userList[0]
+          expect(savedUser.password).not.toBe('passUser1')
+          done()
+        })
+      })
+  })
 })
