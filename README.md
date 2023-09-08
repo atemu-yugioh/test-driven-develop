@@ -13,3 +13,14 @@ npx http-server -c-1 -p 8080 -P http://localhost:3000
 # git hub page hash commit source
 
 https://github.com/basarbk/tdd-nodejs/commits/main?after=a276295e6275c5301203eb7091b64d13fae70675+69&branch=main&qualified_name=refs%2Fheads%2Fmain
+
+# config and setup environment
+
+1. config
+   - tên file .json (dev.json) phải trùng với tên môi trường set cho app (NODE_ENV=dev)
+   - khi start thì set environment là: dev
+   - khi test thì set environment là: test
+   - khi ở staging thì environment là: staging
+   - khi ở production thì environment là: production
+     `Dựa vào environment này mà khi server start sẽ dùng các config tương ứng`
+2. cross-env (dùng cho devDependencies): setup multi environment
