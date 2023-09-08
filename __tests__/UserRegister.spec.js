@@ -14,66 +14,36 @@ beforeEach(() => {
 })
 
 describe('User Registration', () => {
-  it('Should return status 200 OK when signup request is valid', (done) => {
-    request(app)
-      .post('/api/v1/users')
-      .send({
-        username: 'user1',
-        email: 'user1@gmail.com',
-        password: 'passUser1'
-      })
-      .then((response) => {
-        expect(response.status).toBe(200)
-        done()
-      })
+  const postValidUser = () => {
+    return request(app).post('/api/v1/users').send({
+      username: 'user1',
+      email: 'user1@gmail.com',
+      password: 'passUser1'
+    })
+  }
+
+  it('Should return status 200 OK when signup request is valid', async () => {
+    const response = await postValidUser()
+    expect(response.status).toBe(200)
   })
 
-  it('Should be return success message when signup is valid', (done) => {
-    request(app)
-      .post('/api/v1/users')
-      .send({
-        username: 'user1',
-        email: 'user1@gmail.com',
-        password: 'passUser1'
-      })
-      .then((response) => {
-        expect(response.body.message).toBe('User created')
-        done()
-      })
+  it('Should be return success message when signup is valid', async () => {
+    const response = await postValidUser()
+    expect(response.body.message).toBe('User created')
   })
 
-  it('should save the username and password to database', (done) => {
-    request(app)
-      .post('/api/v1/users')
-      .send({
-        username: 'user1',
-        email: 'user1@gmail.com',
-        password: 'passUser1'
-      })
-      .then(() => {
-        userModel.findAll().then((userList) => {
-          const savedUser = userList[0]
-          expect(savedUser.username).toBe('user1')
-          expect(savedUser.email).toBe('user1@gmail.com')
-          done()
-        })
-      })
+  it('should save the username and password to database', async () => {
+    await postValidUser()
+    const userList = await userModel.findAll()
+    const savedUser = userList[0]
+    expect(savedUser.username).toBe('user1')
+    expect(savedUser.email).toBe('user1@gmail.com')
   })
 
-  it('Should hashes password in database', (done) => {
-    request(app)
-      .post('/api/v1/users')
-      .send({
-        username: 'user1',
-        email: 'user1@gmail.com',
-        password: 'passUser1'
-      })
-      .then(() => {
-        userModel.findAll().then((userList) => {
-          const savedUser = userList[0]
-          expect(savedUser.password).not.toBe('passUser1')
-          done()
-        })
-      })
+  it('Should hashes password in database', async () => {
+    await postValidUser()
+    const userList = await userModel.findAll()
+    const savedUser = userList[0]
+    expect(savedUser.password).not.toBe('passUser1')
   })
 })
