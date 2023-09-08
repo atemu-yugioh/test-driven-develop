@@ -7,6 +7,10 @@ class UserService {
     const newUser = await UserModel.create({ username, password: passwordHash, email })
     return newUser
   }
+
+  static findByEmail = async (email) => {
+    return await UserModel.findOne({ where: { email } })
+  }
 }
 
 module.exports = UserService

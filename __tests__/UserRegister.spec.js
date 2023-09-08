@@ -108,4 +108,23 @@ describe('User Registration', () => {
     const { body } = response
     expect(body.validationErrors[field]).toBe(expectedMessage)
   })
+
+  it('Should be return Email in use when same email is already in use', async () => {
+    await userModel.create({ ...validUser })
+    const response = await postUser()
+    const { body } = response
+    expect(body.validationErrors.email).toBe('Email in use')
+  })
+
+  it('Should be return both Error when username is null and email in use', async () => {
+    await userModel.create({ ...validUser })
+    const response = await postUser({
+      username: null,
+      email: validUser.email,
+      password: 'passUser1'
+    })
+
+    const { body } = response
+    expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
+  })
 })
