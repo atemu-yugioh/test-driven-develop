@@ -79,18 +79,31 @@ describe('User Registration', () => {
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
   })
 
-  it.each([
-    ['Username cannot be null', 'username'],
-    ['Email cannot be null', 'email'],
-    ['Password cannot be null', 'password']
-  ])('Should be return message %s when %s is null', async (expectedMessage, field) => {
+  it.each`
+    field         | value              | expectedMessage
+    ${'username'} | ${null}            | ${'Username cannot be null'}
+    ${'username'} | ${'usr'}           | ${'Must have min 4 and max 32 characters'}
+    ${'username'} | ${'a'.repeat(33)}  | ${'Must have min 4 and max 32 characters'}
+    ${'email'}    | ${null}            | ${'Email cannot be null'}
+    ${'email'}    | ${'user.mail.com'} | ${'Email is not valid'}
+    ${'email'}    | ${'user@gmail'}    | ${'Email is not valid'}
+    ${'email'}    | ${'user.com'}      | ${'Email is not valid'}
+    ${'password'} | ${null}            | ${'Password cannot be null'}
+    ${'password'} | ${'pass'}          | ${'Password must be at least 6 characters'}
+    ${'password'} | ${'lowercase'}     | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+    ${'password'} | ${'UPPERCASE'}     | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+    ${'password'} | ${'123123'}        | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+    ${'password'} | ${'lowercase123'}  | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+    ${'password'} | ${'UPPERCASE123'}  | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+    ${'password'} | ${'lowerAndUPPER'} | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+  `('Should be return message $expectedMessage when $field is $value', async ({ field, expectedMessage, value }) => {
     const user = {
       username: 'user1',
       email: 'user1@gmail.com',
       password: 'passUser1'
     }
 
-    user[field] = null
+    user[field] = value
     const response = await postUser(user)
     const { body } = response
     expect(body.validationErrors[field]).toBe(expectedMessage)
