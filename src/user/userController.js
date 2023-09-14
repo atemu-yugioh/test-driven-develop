@@ -7,13 +7,13 @@ class UserController {
     if (!errors.isEmpty()) {
       const validationErrors = {}
 
-      errors.array().forEach((error) => (validationErrors[error.path] = error.msg))
+      errors.array().forEach((error) => (validationErrors[error.path] = req.t(error.msg)))
       return res.status(400).send({ validationErrors: validationErrors })
     }
 
     await UserService.save({ ...req.body })
     return res.status(200).json({
-      message: 'User created',
+      message: req.t('user_create_success'),
       status: 200
     })
   }

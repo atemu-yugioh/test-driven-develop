@@ -24,3 +24,12 @@ https://github.com/basarbk/tdd-nodejs/commits/main?after=a276295e6275c5301203eb7
    - khi ở production thì environment là: production
      `Dựa vào environment này mà khi server start sẽ dùng các config tương ứng`
 2. cross-env (dùng cho devDependencies): setup multi environment
+
+# i18next
+
+1. req.t(key)
+
+- dùng middlewarw: app.use(middleware.handle(i18next)) để assign translation cho request (req.t)
+- translate 1 key sang 1 text tương ứng với folder trong locales
+- đa ngôn ngữ được gửi kèm theo header: 'accept-language'
+- dựa vào lookupHeader: 'accept-language' mà sẽ truy xuất vào folder locales phù hợp để translate

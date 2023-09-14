@@ -19,8 +19,14 @@ const validUser = {
   password: 'passUser1'
 }
 
-const postUser = (user = validUser) => {
-  return request(app).post('/api/v1/users').send(user)
+const postUser = (user = validUser, options = {}) => {
+  const agent = request(app).post('/api/v1/users')
+
+  if (options.language) {
+    agent.set('Accept-Language', options.language)
+  }
+
+  return agent.send(user)
 }
 
 describe('User Registration', () => {
@@ -79,23 +85,32 @@ describe('User Registration', () => {
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
   })
 
+  const usernameNull = 'Username cannot be null'
+  const usernameSize = 'Must have min 4 and max 32 characters'
+  const emailNull = 'E-mail cannot be null'
+  const emailInvalid = 'E-mail is not valid'
+  const passwordNull = 'Password cannot be null'
+  const passwordSize = 'Password must be at least 6 characters'
+  const passwordPattern = 'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'
+  const emailInuse = 'E-mail in use'
+
   it.each`
     field         | value              | expectedMessage
-    ${'username'} | ${null}            | ${'Username cannot be null'}
-    ${'username'} | ${'usr'}           | ${'Must have min 4 and max 32 characters'}
-    ${'username'} | ${'a'.repeat(33)}  | ${'Must have min 4 and max 32 characters'}
-    ${'email'}    | ${null}            | ${'Email cannot be null'}
-    ${'email'}    | ${'user.mail.com'} | ${'Email is not valid'}
-    ${'email'}    | ${'user@gmail'}    | ${'Email is not valid'}
-    ${'email'}    | ${'user.com'}      | ${'Email is not valid'}
-    ${'password'} | ${null}            | ${'Password cannot be null'}
-    ${'password'} | ${'pass'}          | ${'Password must be at least 6 characters'}
-    ${'password'} | ${'lowercase'}     | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'UPPERCASE'}     | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'123123'}        | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'lowercase123'}  | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'UPPERCASE123'}  | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
-    ${'password'} | ${'lowerAndUPPER'} | ${'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'}
+    ${'username'} | ${null}            | ${usernameNull}
+    ${'username'} | ${'usr'}           | ${usernameSize}
+    ${'username'} | ${'a'.repeat(33)}  | ${usernameSize}
+    ${'email'}    | ${null}            | ${emailNull}
+    ${'email'}    | ${'user.mail.com'} | ${emailInvalid}
+    ${'email'}    | ${'user@gmail'}    | ${emailInvalid}
+    ${'email'}    | ${'user.com'}      | ${emailInvalid}
+    ${'password'} | ${null}            | ${passwordNull}
+    ${'password'} | ${'pass'}          | ${passwordSize}
+    ${'password'} | ${'lowercase'}     | ${passwordPattern}
+    ${'password'} | ${'UPPERCASE'}     | ${passwordPattern}
+    ${'password'} | ${'123123'}        | ${passwordPattern}
+    ${'password'} | ${'lowercase123'}  | ${passwordPattern}
+    ${'password'} | ${'UPPERCASE123'}  | ${passwordPattern}
+    ${'password'} | ${'lowerAndUPPER'} | ${passwordPattern}
   `('Should be return message $expectedMessage when $field is $value', async ({ field, expectedMessage, value }) => {
     const user = {
       username: 'user1',
@@ -109,14 +124,75 @@ describe('User Registration', () => {
     expect(body.validationErrors[field]).toBe(expectedMessage)
   })
 
-  it('Should be return Email in use when same email is already in use', async () => {
+  it(`Should be return ${emailInuse} when same email is already in use`, async () => {
     await userModel.create({ ...validUser })
     const response = await postUser()
     const { body } = response
-    expect(body.validationErrors.email).toBe('Email in use')
+    expect(body.validationErrors.email).toBe(emailInuse)
   })
 
   it('Should be return both Error when username is null and email in use', async () => {
+    await userModel.create({ ...validUser })
+    const response = await postUser({
+      username: null,
+      email: validUser.email,
+      password: 'passUser1'
+    })
+
+    const { body } = response
+    expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
+  })
+})
+
+describe('Internationalization', () => {
+  const usernameNull = 'Tên đăng nhập dùng không được null'
+  const usernameSize = 'Tên đăng nhập phải từ 4 đến 32 kí tự'
+  const emailNull = 'E-mail không được null'
+  const emailInvalid = 'E-mail không hợp lệ'
+  const passwordNull = 'Mật Khẩu null'
+  const passwordSize = 'Mật khẩu phải có ít nhất 6 kí tự'
+  const passwordPattern = 'Mật khẩu phải có ít nhất 1 kí tự viết hoa, 1 kí tự viết thường, 1 chữ số'
+  const emailInuse = 'E-mail đã được sử dụng'
+  const userCreateSuccess = 'Tạo tài khoản thành công'
+
+  it.each`
+    field         | value              | expectedMessage
+    ${'username'} | ${null}            | ${usernameNull}
+    ${'username'} | ${'usr'}           | ${usernameSize}
+    ${'username'} | ${'a'.repeat(33)}  | ${usernameSize}
+    ${'email'}    | ${null}            | ${emailNull}
+    ${'email'}    | ${'user.mail.com'} | ${emailInvalid}
+    ${'email'}    | ${'user@gmail'}    | ${emailInvalid}
+    ${'email'}    | ${'user.com'}      | ${emailInvalid}
+    ${'password'} | ${null}            | ${passwordNull}
+    ${'password'} | ${'pass'}          | ${passwordSize}
+    ${'password'} | ${'lowercase'}     | ${passwordPattern}
+    ${'password'} | ${'UPPERCASE'}     | ${passwordPattern}
+    ${'password'} | ${'123123'}        | ${passwordPattern}
+    ${'password'} | ${'lowercase123'}  | ${passwordPattern}
+    ${'password'} | ${'UPPERCASE123'}  | ${passwordPattern}
+    ${'password'} | ${'lowerAndUPPER'} | ${passwordPattern}
+  `('Should be return message $expectedMessage when $field is $value', async ({ field, expectedMessage, value }) => {
+    const user = {
+      username: 'user1',
+      email: 'user1@gmail.com',
+      password: 'passUser1'
+    }
+
+    user[field] = value
+    const response = await postUser(user, { language: 'vn' })
+    const { body } = response
+    expect(body.validationErrors[field]).toBe(expectedMessage)
+  })
+
+  it(`Should be return ${emailInuse} when same email is already in use when language is set as Vietnamese`, async () => {
+    await userModel.create({ ...validUser })
+    const response = await postUser({ ...validUser }, { language: 'vn' })
+    const { body } = response
+    expect(body.validationErrors.email).toBe(emailInuse)
+  })
+
+  it('Should be return both Error when username is null and email in use when language is set as Vietnamese', async () => {
     await userModel.create({ ...validUser })
     const response = await postUser({
       username: null,

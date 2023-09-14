@@ -1,0 +1,11 @@
+{
+  "username_null": "Tên đăng nhập dùng không được null",
+  "username_size": "Tên đăng nhập phải từ 4 đến 32 kí tự",
+  "email_null": "E-mail không được null",
+  "email_invalid": "E-mail không hợp lệ",
+  "password_null": "Mật Khẩu null",
+  "password_size": "Mật khẩu phải có ít nhất 6 kí tự",
+  "password_pattern": "Mật khẩu phải có ít nhất 1 kí tự viết hoa, 1 kí tự viết thường, 1 chữ số",
+  "email_inuse": "E-mail đã được sử dụng",
+  "user_create_success": "Tạo tài khoản thành công"
+}
