@@ -142,6 +142,32 @@ describe('User Registration', () => {
     const { body } = response
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
   })
+
+  it('Should be return inactive = true when create user', async () => {
+    await postUser()
+
+    const user = await userModel.findAll()
+    const savedUser = user[0]
+
+    expect(savedUser.inactive).toBe(true)
+  })
+
+  it('Should be return inactive as true when create user even request body contain field inactive as false', async () => {
+    await postUser({ ...validUser, inactive: false })
+
+    const user = await userModel.findAll()
+
+    const savedUser = user[0]
+
+    expect(savedUser.inactive).toBe(true)
+  })
+
+  it('Should be return activationToken when create user', async () => {
+    await postUser()
+    const user = await userModel.findAll()
+    const userSaved = user[0]
+    expect(userSaved.activationToken).toBeTruthy()
+  })
 })
 
 describe('Internationalization', () => {
