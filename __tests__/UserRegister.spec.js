@@ -3,6 +3,7 @@ const app = require('../src/app')
 const userModel = require('../src/user/userModel')
 const sequelize = require('../src/config/database')
 const nodemailerStub = require('nodemailer-stub')
+const EmailService = require('../src/email/emailService')
 
 // chạy trước khi test
 beforeAll(() => {
@@ -170,7 +171,7 @@ describe('User Registration', () => {
     expect(userSaved.activationToken).toBeTruthy()
   })
 
-  it('Shoudl sends an Account activation email with activationToken', async () => {
+  it('Should sends an Account activation email with activationToken', async () => {
     await postUser()
     const lastEmail = nodemailerStub.interactsWithMail.lastMail()
     expect(lastEmail.to[0]).toBe(validUser.email)
@@ -178,6 +179,41 @@ describe('User Registration', () => {
     const user = await userModel.findAll()
     const userSaved = user[0]
     expect(lastEmail.content).toContain(userSaved.activationToken)
+  })
+
+  it('Should return 502 Bad Gateway when sending email fail', async () => {
+    //  mock cho server email sập
+    const mockSendAccountActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failed to deliver email' })
+
+    // khi tạo user sẽ không gửi mail được
+    const response = await postUser()
+
+    // restore lại email server
+    mockSendAccountActivation.mockRestore()
+    expect(response.status).toBe(502)
+  })
+
+  it('Should return E-mail Failure when sending email fail', async () => {
+    const mockSendAccountActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failed to deliver email' })
+
+    const response = await postUser()
+    mockSendAccountActivation.mockRestore()
+    expect(response.body.message).toBe('E-mail Failure')
+  })
+
+  it('Should not create user when sending email failure => Rollback transaction', async () => {
+    const mockSendAccountActivation = jest
+      .spyOn(EmailService, 'sendAccountActivation')
+      .mockRejectedValue({ message: 'Failure to deliver email' })
+
+    await postUser()
+    const user = await userModel.findAll()
+    mockSendAccountActivation.mockRestore()
+    expect(user.length).toBe(0)
   })
 })
 

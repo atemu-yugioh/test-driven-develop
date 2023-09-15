@@ -11,11 +11,15 @@ class UserController {
       return res.status(400).send({ validationErrors: validationErrors })
     }
 
-    await UserService.save({ ...req.body })
-    return res.status(200).json({
-      message: req.t('user_create_success'),
-      status: 200
-    })
+    try {
+      await UserService.save({ ...req.body })
+      return res.status(200).json({
+        message: req.t('user_create_success'),
+        status: 200
+      })
+    } catch (err) {
+      return res.status(502).send({ message: req.t(err.message) })
+    }
   }
 }
 
