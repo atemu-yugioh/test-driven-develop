@@ -1,4 +1,9 @@
+const MathController = require('../mocks/mathController')
+const MathService = require('../mocks/mathService')
 const { runCallback } = require('../mocks/utils')
+
+// mock tất cả các function trong 1 module
+jest.mock('../mocks/mathService.js')
 
 describe('test runCallback function', () => {
   //*** */ Ý Tưởng:
@@ -33,5 +38,67 @@ describe('test runCallback function', () => {
   // nên cần phải clearAllMocks sau mỗi lần test function
   afterEach(() => {
     jest.clearAllMocks()
+  })
+})
+
+describe('Mock 1 function với jest.fn', () => {
+  MathService.add = jest.fn()
+  MathService.subtract = jest.fn()
+
+  test('Test MathService.add', () => {
+    MathController.doAdd(5, 6)
+
+    expect(MathService.add).toHaveBeenCalledWith(5, 6)
+  })
+
+  test('Test MathService.subtract', () => {
+    MathController.doSubtract(3, 2)
+
+    expect(MathService.subtract).toHaveBeenCalledWith(3, 2)
+  })
+})
+
+describe('Mock 1 module với jest.mock', () => {
+  // thay vì gán từng funtion trong 1 module bằng jest.fn()
+  // thì dùng jest.mock sẽ gán tất cả function trong 1 module bằng jest.fn()
+  beforeEach(() => {
+    // Clear all instances and calls to constructor and all methods:
+    MathService.mockClear()
+  })
+  test('test MathService.multiply', () => {
+    MathController.doMultiply(2, 3)
+    expect(MathService.multiply).toHaveBeenCalledWith(2, 3)
+  })
+
+  test('test MathService.divide', () => {
+    MathController.doDivide(2, 3)
+    expect(MathService.divide).toHaveBeenCalledWith(2, 3)
+  })
+})
+
+describe('Spy or mock 1 function với jest.spyOn', () => {
+  // jest.spyOn: giữ nguyên original implementation có nghĩa là gọi tới function đó vẫn trả về kết quả
+  // còn dùng mock() và fn() thì return về undefined
+  test('Test original implementation', () => {
+    const addMock = jest.spyOn(MathService, 'add')
+
+    // call the original implementation
+    const response = MathController.doAdd(1, 2)
+    expect(response).toEqual(5)
+
+    // and the spy stores the calls to add
+    expect(addMock).toHaveBeenCalledWith(1, 2)
+  })
+
+  test('Testing override the implementation', () => {
+    const addMock = jest.spyOn(MathService, 'add')
+
+    // override the implementation
+    // addMock.mockImplementation(() => "mock");
+    // expect(MathController.doAdd(1, 2)).toEqual("mock");
+
+    // restore the original implementation
+    // addMock.mockRestore();
+    // expect(MathController.doAdd(1, 2)).toEqual(3);
   })
 })
