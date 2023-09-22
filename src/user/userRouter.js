@@ -40,4 +40,6 @@ router.post(
   asyncHandler(userController.register)
 )
 
+router.post('/token/:token', userController.activeToken)
+
 module.exports = router

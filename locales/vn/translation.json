@@ -8,5 +8,7 @@
   "password_pattern": "Mật khẩu phải có ít nhất 1 kí tự viết hoa, 1 kí tự viết thường, 1 chữ số",
   "email_inuse": "E-mail đã được sử dụng",
   "user_create_success": "Tạo tài khoản thành công",
-  "email_failure": "Gửi email thất bại"
+  "email_failure": "Gửi email thất bại",
+  "account_activation_failure": "Tài khoản này đang hoạt động hoặc token không hợp lệ",
+  "account_activation_success": "Tài khoản đã được kích hoạt"
 }

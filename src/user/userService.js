@@ -4,6 +4,7 @@ const UserModel = require('./userModel')
 const EmailService = require('../email/emailService')
 const sequelize = require('../config/database')
 const { EmailException } = require('../email/emailException')
+const InvalidTokenException = require('./InvalidTokenException')
 
 const generateToken = (length) => {
   return crypto.randomBytes(length).toString('hex')
@@ -32,6 +33,20 @@ class UserService {
 
   static findByEmail = async (email) => {
     return await UserModel.findOne({ where: { email } })
+  }
+
+  static activeToken = async (token) => {
+    const user = await UserModel.findOne({ where: { activationToken: token } })
+
+    if (!user) {
+      throw new InvalidTokenException()
+    }
+
+    user.inactive = false
+    user.activationToken = null
+    await user.save()
+
+    return user
   }
 }
 

@@ -2,8 +2,6 @@ const request = require('supertest')
 const app = require('../src/app')
 const userModel = require('../src/user/userModel')
 const sequelize = require('../src/config/database')
-const nodemailerStub = require('nodemailer-stub')
-const EmailService = require('../src/email/emailService')
 const SMTPServer = require('smtp-server').SMTPServer
 
 let lastMail, server
@@ -293,4 +291,74 @@ describe('Internationalization', () => {
     const { body } = response
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
   })
+})
+
+describe('Account activation', () => {
+  it('Should active account when correct token is sent', async () => {
+    await postUser()
+    let users = await userModel.findAll()
+    const token = users[0].activationToken
+
+    await request(app).post(`/api/v1/users/token/${token}`).send()
+
+    users = await userModel.findAll()
+    expect(users[0].inactive).toBe(false)
+  })
+
+  it('Should remove token when account active successful', async () => {
+    await postUser()
+    let users = await userModel.findAll()
+    const token = users[0].activationToken
+
+    await request(app).post(`/api/v1/users/token/${token}`).send()
+
+    users = await userModel.findAll()
+
+    expect(users[0].activationToken).toBeFalsy()
+  })
+
+  it('Should does not active account when token wrong', async () => {
+    const token = 'token-wrong'
+    await postUser()
+
+    await request(app).post(`/api/v1/users/token/${token}`).send()
+
+    users = await userModel.findAll()
+
+    expect(users[0].inactive).toBe(true)
+  })
+
+  it('Should return bad request when token wrong', async () => {
+    const token = 'wrong-token'
+
+    await postUser()
+
+    const response = await request(app).post(`/api/v1/users/token/${token}`).send()
+
+    expect(response.status).toBe(400)
+  })
+
+  it.each`
+    language | tokenStatus  | message
+    ${'vn'}  | ${'wrong'}   | ${'Tài khoản này đang hoạt động hoặc token không hợp lệ'}
+    ${'en'}  | ${'wrong'}   | ${'This account is either active or the token is invalid'}
+    ${'vn'}  | ${'correct'} | ${'Tài khoản đã được kích hoạt'}
+    ${'en'}  | ${'correct'} | ${'Account is activated'}
+  `(
+    'Should return ${message} when token is ${tokenStatus} and languge ${language}',
+    async ({ language, tokenStatus, message }) => {
+      await postUser()
+      let token = 'this-token-does-not-exist'
+
+      if (tokenStatus === 'correct') {
+        let users = await userModel.findAll()
+        token = users[0].activationToken
+      }
+      const response = await request(app)
+        .post('/api/v1/users/token/' + token)
+        .set('Accept-Language', language)
+        .send()
+      expect(response.body.message).toBe(message)
+    }
+  )
 })
