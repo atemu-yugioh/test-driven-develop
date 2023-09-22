@@ -21,6 +21,24 @@ class UserController {
       return res.status(502).send({ message: req.t(err.message) })
     }
   }
+
+  activeToken = async (req, res, next) => {
+    try {
+      const { token } = req.params
+
+      const user = await UserService.activeToken(token)
+
+      return res.status(200).json({
+        data: user,
+        message: req.t('account_activation_success'),
+        status: 200
+      })
+    } catch (error) {
+      return res.status(400).json({
+        message: req.t(error.message)
+      })
+    }
+  }
 }
 
 module.exports = new UserController()
