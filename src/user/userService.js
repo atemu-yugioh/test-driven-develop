@@ -20,7 +20,7 @@ class UserService {
       activationToken: generateToken(16)
     }
     const transaction = await sequelize.transaction()
-    await UserModel.create(userData)
+    await UserModel.create(userData, { transaction })
 
     try {
       await EmailService.sendAccountActivation(email, userData.activationToken)

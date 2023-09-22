@@ -50,7 +50,7 @@ const validUser = {
 }
 
 const postUser = (user = validUser, options = {}) => {
-  const agent = request(app).post('/api/v1/users')
+  const agent = request(app).post('/api/1.0/users')
 
   if (options.language) {
     agent.set('Accept-Language', options.language)
@@ -299,7 +299,7 @@ describe('Account activation', () => {
     let users = await userModel.findAll()
     const token = users[0].activationToken
 
-    await request(app).post(`/api/v1/users/token/${token}`).send()
+    await request(app).post(`/api/1.0/users/token/${token}`).send()
 
     users = await userModel.findAll()
     expect(users[0].inactive).toBe(false)
@@ -310,7 +310,7 @@ describe('Account activation', () => {
     let users = await userModel.findAll()
     const token = users[0].activationToken
 
-    await request(app).post(`/api/v1/users/token/${token}`).send()
+    await request(app).post(`/api/1.0/users/token/${token}`).send()
 
     users = await userModel.findAll()
 
@@ -321,7 +321,7 @@ describe('Account activation', () => {
     const token = 'token-wrong'
     await postUser()
 
-    await request(app).post(`/api/v1/users/token/${token}`).send()
+    await request(app).post(`/api/1.0/users/token/${token}`).send()
 
     users = await userModel.findAll()
 
@@ -333,7 +333,7 @@ describe('Account activation', () => {
 
     await postUser()
 
-    const response = await request(app).post(`/api/v1/users/token/${token}`).send()
+    const response = await request(app).post(`/api/1.0/users/token/${token}`).send()
 
     expect(response.status).toBe(400)
   })
@@ -355,7 +355,7 @@ describe('Account activation', () => {
         token = users[0].activationToken
       }
       const response = await request(app)
-        .post('/api/v1/users/token/' + token)
+        .post('/api/1.0/users/token/' + token)
         .set('Accept-Language', language)
         .send()
       expect(response.body.message).toBe(message)

@@ -29,7 +29,7 @@ app.use(middleware.handle(i18next))
 app.use(express.json())
 
 // init router
-app.use('/api/v1', require('./routes'))
+app.use('/api/1.0', require('./routes'))
 
 // handle error 404
 app.use((req, res, next) => {
