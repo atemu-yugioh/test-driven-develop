@@ -83,8 +83,6 @@ describe('Listing User', () => {
 
     const response = await getUsers().query({ page: 1 })
 
-    const { body } = response
-
     expect(response.body.content[0].username).toBe('user11')
     expect(response.body.page).toBe(1)
   })
@@ -96,5 +94,49 @@ describe('Listing User', () => {
 
     expect(response.body.content[0].username).toBe('user1')
     expect(response.body.page).toBe(0)
+  })
+
+  it('should return 5 users and corresponding size indicator when size is set 5 in parameter', async () => {
+    await addUsers(11)
+
+    const response = await getUsers().query({ size: 5 })
+
+    const { body } = response
+
+    expect(body.content.length).toBe(5)
+    expect(body.size).toBe(5)
+  })
+
+  it('should return 10 users and corresponding size indicator when size is set 1000 in parameter ', async () => {
+    await addUsers(11)
+
+    const response = await getUsers().query({ size: 1000 })
+
+    const { body } = response
+
+    expect(body.content.length).toBe(10)
+    expect(body.size).toBe(10)
+  })
+
+  it('should returns 10 users and corresponding size indicator when size is set as 0', async () => {
+    await addUsers(11)
+
+    const response = await getUsers().query({ size: 0 })
+
+    const { body } = response
+
+    expect(body.content.length).toBe(10)
+    expect(body.size).toBe(10)
+  })
+
+  it('should returns page as zero and size as 10 when non numeric query params provided for both', async () => {
+    await addUsers(11)
+
+    const response = await getUsers().query({ page: 'page', size: 'size' })
+
+    const { body } = response
+
+    expect(body.content.length).toBe(10)
+    expect(body.size).toBe(10)
   })
 })

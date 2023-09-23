@@ -5,6 +5,7 @@ const asyncHandler = require('../helper/asyncHandler')
 
 const { check } = require('express-validator')
 const UserService = require('./userService')
+const pagination = require('../middleware/pagination')
 
 router.post(
   '',
@@ -40,8 +41,8 @@ router.post(
   asyncHandler(userController.register)
 )
 
-router.post('/token/:token', userController.activeToken)
+router.post('/token/:token', asyncHandler(userController.activeToken))
 
-router.get('', userController.getUsers)
+router.get('', pagination, asyncHandler(userController.getUsers))
 
 module.exports = router

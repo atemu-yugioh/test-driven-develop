@@ -9,41 +9,29 @@ class UserController {
       throw new ValidationException(errors.array())
     }
 
-    try {
-      await UserService.save({ ...req.body })
-      return res.status(200).json({
-        message: req.t('user_create_success'),
-        status: 200
-      })
-    } catch (error) {
-      next(error)
-    }
+    await UserService.save({ ...req.body })
+    return res.status(200).json({
+      message: req.t('user_create_success'),
+      status: 200
+    })
   }
 
   activeToken = async (req, res, next) => {
-    try {
-      const { token } = req.params
+    const { token } = req.params
 
-      const user = await UserService.activeToken(token)
+    const user = await UserService.activeToken(token)
 
-      return res.status(200).json({
-        data: user,
-        message: req.t('account_activation_success'),
-        status: 200
-      })
-    } catch (error) {
-      next(error)
-    }
+    return res.status(200).json({
+      data: user,
+      message: req.t('account_activation_success'),
+      status: 200
+    })
   }
 
   getUsers = async (req, res, next) => {
-    let page = req.query.page ? Number.parseInt(req.query.page) : 0
+    const { page, size } = req.pagination
 
-    if (page < 0) {
-      page = 0
-    }
-
-    const users = await UserService.getUsers(page)
+    const users = await UserService.getUsers(page, size)
 
     return res.status(200).json(users)
   }
