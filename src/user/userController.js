@@ -1,3 +1,4 @@
+const ValidationException = require('../errors/ValidationException')
 const UserService = require('./userService')
 const { validationResult } = require('express-validator')
 class UserController {
@@ -5,10 +6,7 @@ class UserController {
     const errors = validationResult(req)
 
     if (!errors.isEmpty()) {
-      const validationErrors = {}
-
-      errors.array().forEach((error) => (validationErrors[error.path] = req.t(error.msg)))
-      return res.status(400).send({ validationErrors: validationErrors })
+      throw new ValidationException(errors.array())
     }
 
     try {
@@ -17,8 +15,8 @@ class UserController {
         message: req.t('user_create_success'),
         status: 200
       })
-    } catch (err) {
-      return res.status(502).send({ message: req.t(err.message) })
+    } catch (error) {
+      next(error)
     }
   }
 
@@ -34,9 +32,7 @@ class UserController {
         status: 200
       })
     } catch (error) {
-      return res.status(400).json({
-        message: req.t(error.message)
-      })
+      next(error)
     }
   }
 }

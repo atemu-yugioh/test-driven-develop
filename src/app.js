@@ -39,13 +39,6 @@ app.use((req, res, next) => {
 })
 
 // handle error
-app.use((error, req, res, next) => {
-  const statusCode = error.status || 500
-  return res.status(statusCode).json({
-    message: error.message || 'Internal Server Error!!!',
-    status: statusCode,
-    data: null
-  })
-})
+app.use(require('./errors/ErrorHandler'))
 
 module.exports = app
