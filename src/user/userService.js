@@ -49,18 +49,17 @@ class UserService {
     return user
   }
 
-  static getUsers = async () => {
-    const users = await UserModel.findAll({
-      where: {
-        inactive: false
-      },
+  static getUsers = async (page) => {
+    const pageSize = 10
+    const userswithCount = await UserModel.findAndCountAll({
+      where: { inactive: false },
       attributes: ['id', 'username', 'email'],
-      limit: 10
+      limit: pageSize,
+      offset: page * pageSize
     })
-
     return {
-      content: users,
-      page: 0,
+      content: userswithCount.rows,
+      page,
       size: 10,
       totalPages: 0
     }

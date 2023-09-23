@@ -16,7 +16,7 @@ const getUsers = () => {
 }
 
 const addUsers = async (activeUser, inActiveUser = 0) => {
-  for (let i = 1; i < activeUser + inActiveUser; i++) {
+  for (let i = 1; i <= activeUser + inActiveUser; i++) {
     await userModel.create({
       username: `user${i}`,
       email: `user${i}@gmail.com`,
@@ -76,5 +76,25 @@ describe('Listing User', () => {
     const firstUser = content[0]
 
     expect(Object.keys(firstUser)).toEqual(['id', 'username', 'email'])
+  })
+
+  it('should return second page content user and page indicator when set page parameter as 1', async () => {
+    await addUsers(11)
+
+    const response = await getUsers().query({ page: 1 })
+
+    const { body } = response
+
+    expect(response.body.content[0].username).toBe('user11')
+    expect(response.body.page).toBe(1)
+  })
+
+  it('should return first page when set page parameter below zero', async () => {
+    await addUsers(11)
+
+    const response = await getUsers().query({ page: -5 })
+
+    expect(response.body.content[0].username).toBe('user1')
+    expect(response.body.page).toBe(0)
   })
 })
