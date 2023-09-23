@@ -1,6 +1,7 @@
 class EmailException {
   constructor(message = 'email_failure') {
     this.message = message
+    this.status = 502
   }
 }
 
