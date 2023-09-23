@@ -11,5 +11,6 @@
   "email_failure": "Gửi email thất bại",
   "account_activation_failure": "Tài khoản này đang hoạt động hoặc token không hợp lệ",
   "account_activation_success": "Tài khoản đã được kích hoạt",
-  "validation_fail": "Lỗi dữ liệu"
+  "validation_fail": "Lỗi dữ liệu",
+  "user_not_found": "Người dùng không tồn tại"
 }

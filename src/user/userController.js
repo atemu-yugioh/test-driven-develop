@@ -35,6 +35,14 @@ class UserController {
 
     return res.status(200).json(users)
   }
+
+  getUser = async (req, res, next) => {
+    const { id } = req.params
+
+    const user = await UserService.getUser(id)
+
+    return res.status(200).json(user)
+  }
 }
 
 module.exports = new UserController()
