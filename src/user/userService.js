@@ -5,10 +5,13 @@ const EmailService = require('../email/emailService')
 const sequelize = require('../config/database')
 const { EmailException } = require('../email/emailException')
 const InvalidTokenException = require('./InvalidTokenException')
+const UserNotFoundException = require('./userNotFoundException')
 
 const generateToken = (length) => {
   return crypto.randomBytes(length).toString('hex')
 }
+
+const attributes = ['id', 'username', 'email']
 
 class UserService {
   static save = async ({ username, password, email }) => {
@@ -52,7 +55,7 @@ class UserService {
   static getUsers = async (page, size) => {
     const userswithCount = await UserModel.findAndCountAll({
       where: { inactive: false },
-      attributes: ['id', 'username', 'email'],
+      attributes,
       limit: size,
       offset: page * size
     })
@@ -62,6 +65,22 @@ class UserService {
       size,
       totalPages: Math.ceil(userswithCount.count / size)
     }
+  }
+
+  static getUser = async (id) => {
+    const user = await UserModel.findOne({
+      where: {
+        id,
+        inactive: false
+      },
+      attributes
+    })
+
+    if (!user) {
+      throw new UserNotFoundException()
+    }
+
+    return user
   }
 }
 

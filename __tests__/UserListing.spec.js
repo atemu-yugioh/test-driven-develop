@@ -140,3 +140,77 @@ describe('Listing User', () => {
     expect(body.size).toBe(10)
   })
 })
+
+describe('Detail User', () => {
+  const getUser = (id) => {
+    return request(app).get('/api/1.0/users/' + id)
+  }
+
+  it('should return 404 when user not found', async () => {
+    const response = await getUser()
+    expect(response.status).toBe(404)
+  })
+
+  it.each`
+    language | message
+    ${'vn'}  | ${'Người dùng không tồn tại'}
+    ${'en'}  | ${'User not found'}
+  `('Should return $message for unknow user when language is set to $language', async ({ language, message }) => {
+    const response = await getUser().set('Accept-Language', language)
+
+    expect(response.body.message).toBe(message)
+  })
+
+  it('should returns proper error body when user not found', async () => {
+    const timeStart = new Date().getTime()
+
+    const response = await getUser(5)
+
+    const { body } = response
+
+    expect(body.path).toBe('/api/1.0/users/5')
+    expect(body.timestamp).toBeGreaterThan(timeStart)
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message'])
+  })
+
+  it('should returns 200 when an active user exist', async () => {
+    const user = await userModel.create({
+      username: 'user1',
+      email: 'user1@gmail.com',
+      password: 'passUser1',
+      inactive: false
+    })
+
+    const response = await getUser(user.id)
+
+    expect(response.status).toBe(200)
+  })
+
+  it('should returns id, username and email in response body when an active user exist', async () => {
+    const user = await userModel.create({
+      username: 'user1',
+      email: 'user1@gmail.com',
+      password: 'passUser1',
+      inactive: false
+    })
+
+    const response = await getUser(user.id)
+
+    const { body: newUser } = response
+
+    expect(Object.keys(newUser)).toEqual(['id', 'username', 'email'])
+  })
+
+  it('should returns 404 when the user is inactive', async () => {
+    const user = await userModel.create({
+      username: 'user1',
+      email: 'user1@gmail.com',
+      password: 'passUser1',
+      inactive: true
+    })
+
+    const response = await getUser(user.id)
+
+    expect(response.status).toBe(404)
+  })
+})
