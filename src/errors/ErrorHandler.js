@@ -1,5 +1,5 @@
 const errorHandler = (error, req, res, next) => {
-  const { status, message, errors } = error
+  let { status, message, errors } = error
 
   let validationErrors
 
@@ -9,8 +9,9 @@ const errorHandler = (error, req, res, next) => {
   }
 
   return res.status(status).json({
+    path: req.originalUrl,
+    timestamp: new Date().getTime(),
     message: req.t(message),
-    status,
     validationErrors
   })
 }
