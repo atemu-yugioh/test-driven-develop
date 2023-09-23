@@ -37,7 +37,13 @@ class UserController {
   }
 
   getUsers = async (req, res, next) => {
-    const users = await UserService.getUsers()
+    let page = req.query.page ? Number.parseInt(req.query.page) : 0
+
+    if (page < 0) {
+      page = 0
+    }
+
+    const users = await UserService.getUsers(page)
 
     return res.status(200).json(users)
   }
