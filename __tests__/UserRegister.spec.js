@@ -230,6 +230,12 @@ describe('User Registration', () => {
     const user = await userModel.findAll()
     expect(user.length).toBe(0)
   })
+
+  it('Should return Validation Failure message in error response body when validation fail', async () => {
+    const response = await postUser({ ...validUser, username: null })
+
+    expect(response.body.message).toBe('Validation Failure')
+  })
 })
 
 describe('Internationalization', () => {
@@ -242,6 +248,7 @@ describe('Internationalization', () => {
   const passwordPattern = 'Mật khẩu phải có ít nhất 1 kí tự viết hoa, 1 kí tự viết thường, 1 chữ số'
   const emailInuse = 'E-mail đã được sử dụng'
   const userCreateSuccess = 'Tạo tài khoản thành công'
+  const validation_fail = 'Lỗi dữ liệu'
 
   it.each`
     field         | value              | expectedMessage
@@ -290,6 +297,12 @@ describe('Internationalization', () => {
 
     const { body } = response
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
+  })
+
+  it(`Should be return ${validation_fail} message in response body when validation fail with language set as Vietnamese`, async () => {
+    const response = await postUser({ ...validUser, username: null }, { language: 'vn' })
+
+    expect(response.body.message).toBe(validation_fail)
   })
 })
 
@@ -361,4 +374,54 @@ describe('Account activation', () => {
       expect(response.body.message).toBe(message)
     }
   )
+})
+
+describe('Error Body', () => {
+  it('Should return path, timestamp, message and validationErrors in response when validation failure', async () => {
+    const response = await postUser({ ...validUser, username: null })
+
+    const { body } = response
+
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message', 'validationErrors'])
+  })
+
+  it('Should return path, message, and timestamp in respone when request fail other validation error', async () => {
+    const token = 'token-does-not-exist'
+
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+
+    const { body } = response
+
+    expect(Object.keys(body)).toEqual(['path', 'timestamp', 'message'])
+  })
+
+  it('Should return path in error body', async () => {
+    const token = 'token-does-not-exist'
+
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+
+    const { body } = response
+
+    expect(body.path).toBe('/api/1.0/users/token/' + token)
+  })
+
+  it('Should returns timestamp in milliseconds within 5 seconds value in error body', async () => {
+    const timeSendRequest = new Date().getTime()
+    const fiveSecondsLater = timeSendRequest + 5 * 1000
+
+    const token = 'token-does-not-exist'
+
+    const response = await request(app)
+      .post('/api/1.0/users/token/' + token)
+      .send()
+
+    const { body } = response
+
+    expect(body.timestamp).toBeGreaterThan(timeSendRequest)
+    expect(body.timestamp).toBeLessThan(fiveSecondsLater)
+  })
 })
