@@ -42,4 +42,6 @@ router.post(
 
 router.post('/token/:token', userController.activeToken)
 
+router.get('', userController.getUsers)
+
 module.exports = router
