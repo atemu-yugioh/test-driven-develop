@@ -1,5 +1,6 @@
 const request = require('supertest')
 const app = require('../src/app')
+const bcrypt = require('bcrypt')
 const userModel = require('../src/user/userModel')
 const sequelize = require('../src/config/database')
 const en = require('../locales/en/translation.json')
@@ -13,17 +14,26 @@ beforeEach(async () => {
   await userModel.destroy({ truncate: true })
 })
 
-const getUsers = () => {
-  return request(app).get('/api/1.0/users')
+const getUsers = (options = {}) => {
+  const agent = request(app).get('/api/1.0/users')
+
+  if (options.auth) {
+    const { email, password } = options.auth
+
+    agent.auth(email, password, { type: 'basic' })
+  }
+
+  return agent
 }
 
 const addUsers = async (activeUser, inActiveUser = 0) => {
+  const passwordHash = await bcrypt.hash('Password1', 10)
   for (let i = 1; i <= activeUser + inActiveUser; i++) {
     await userModel.create({
       username: `user${i}`,
       email: `user${i}@gmail.com`,
-      password: `passUser${i}`,
-      inactive: i > activeUser
+      inactive: i > activeUser,
+      password: passwordHash
     })
   }
 }
@@ -140,6 +150,13 @@ describe('Listing User', () => {
 
     expect(body.content.length).toBe(10)
     expect(body.size).toBe(10)
+  })
+
+  it('should return user page without contain owner call when request has valid authorization', async () => {
+    await addUsers(11)
+    const response = await getUsers({ auth: { email: 'user1@gmail.com', password: 'Password1' } })
+
+    expect(response.body.totalPages).toBe(1)
   })
 })
 

@@ -3,6 +3,7 @@ const crypto = require('crypto')
 const UserModel = require('./userModel')
 const EmailService = require('../email/emailService')
 const sequelize = require('../config/database')
+const Sequelize = require('sequelize')
 const { EmailException } = require('../email/emailException')
 const InvalidTokenException = require('./InvalidTokenException')
 const UserNotFoundException = require('./userNotFoundException')
@@ -52,18 +53,23 @@ class UserService {
     return user
   }
 
-  static getUsers = async (page, size) => {
-    const userswithCount = await UserModel.findAndCountAll({
-      where: { inactive: false },
+  static getUsers = async (page, size, authenticateUser) => {
+    const usersWithCount = await UserModel.findAndCountAll({
+      where: {
+        inactive: false,
+        id: {
+          [Sequelize.Op.not]: authenticateUser ? authenticateUser.id : 0
+        }
+      },
       attributes,
       limit: size,
       offset: page * size
     })
     return {
-      content: userswithCount.rows,
+      content: usersWithCount.rows,
       page,
       size,
-      totalPages: Math.ceil(userswithCount.count / size)
+      totalPages: Math.ceil(usersWithCount.count / size)
     }
   }
 

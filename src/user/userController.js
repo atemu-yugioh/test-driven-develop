@@ -31,9 +31,12 @@ class UserController {
   }
 
   getUsers = async (req, res, next) => {
-    const { page, size } = req.pagination
+    const {
+      pagination: { page, size },
+      authenticateUser
+    } = req
 
-    const users = await UserService.getUsers(page, size)
+    const users = await UserService.getUsers(page, size, authenticateUser)
 
     return res.status(200).json(users)
   }

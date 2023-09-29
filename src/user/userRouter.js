@@ -44,7 +44,7 @@ router.post(
 
 router.post('/token/:token', asyncHandler(userController.activeToken))
 
-router.get('', pagination, asyncHandler(userController.getUsers))
+router.get('', pagination, basicAuthentication, asyncHandler(userController.getUsers))
 
 router.get('/:id', asyncHandler(userController.getUser))
 
