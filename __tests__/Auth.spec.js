@@ -1,6 +1,6 @@
 const request = require('supertest')
 const app = require('../src/app')
-const UserModel = require('../src/user/userModel')
+const userModel = require('../src/user/userModel')
 const sequelize = require('../src/config/database')
 const bcrypt = require('bcrypt')
 const en = require('../locales/en/translation.json')
@@ -11,7 +11,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  await UserModel.destroy({ truncate: true })
+  await userModel.destroy({ truncate: true })
 })
 const activeUser = {
   username: 'user1',
@@ -24,7 +24,7 @@ const addUser = async (user = { ...activeUser }) => {
   const passwordHash = await bcrypt.hash(user.password, 10)
   user.password = passwordHash
 
-  return await UserModel.create(user)
+  return await userModel.create(user)
 }
 
 const correctCredential = {
