@@ -12,5 +12,7 @@
   "account_activation_failure": "Tài khoản này đang hoạt động hoặc token không hợp lệ",
   "account_activation_success": "Tài khoản đã được kích hoạt",
   "validation_fail": "Lỗi dữ liệu",
-  "user_not_found": "Người dùng không tồn tại"
+  "user_not_found": "Người dùng không tồn tại",
+  "authentication_failure": "Thông tin xác thực không đúng",
+  "inactive_authentication_failure": "Tài khoản chưa được kich hoạt"
 }
