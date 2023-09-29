@@ -1,7 +1,7 @@
 const UserService = require('../user/userService')
 const AuthenticationException = require('./AuthenticationException')
 const bcrypt = require('bcrypt')
-const ForbiddenException = require('./ForbiddenException')
+const ForbiddenException = require('../errors/ForbiddenException')
 const { validationResult } = require('express-validator')
 
 class AuthController {

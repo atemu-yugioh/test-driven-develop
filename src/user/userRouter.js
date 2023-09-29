@@ -47,4 +47,6 @@ router.get('', pagination, asyncHandler(userController.getUsers))
 
 router.get('/:id', asyncHandler(userController.getUser))
 
+router.patch('/:id', asyncHandler(userController.update))
+
 module.exports = router

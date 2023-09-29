@@ -1,3 +1,4 @@
+const ForbiddenException = require('../errors/ForbiddenException')
 const ValidationException = require('../errors/ValidationException')
 const UserService = require('./userService')
 const { validationResult } = require('express-validator')
@@ -42,6 +43,10 @@ class UserController {
     const user = await UserService.getUser(id)
 
     return res.status(200).json(user)
+  }
+
+  update = async (req, res, next) => {
+    return next(new ForbiddenException('unauthroized_user_update'))
   }
 }
 
