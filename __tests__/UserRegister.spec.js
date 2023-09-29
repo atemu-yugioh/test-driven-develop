@@ -3,6 +3,8 @@ const app = require('../src/app')
 const userModel = require('../src/user/userModel')
 const sequelize = require('../src/config/database')
 const SMTPServer = require('smtp-server').SMTPServer
+const en = require('../locales/en/translation.json')
+const vn = require('../locales/vn/translation.json')
 
 let lastMail, server
 let simulateSmtpFailure = false
@@ -34,9 +36,9 @@ beforeAll(async () => {
 })
 
 // trước mỗi test thực hiện clear database user
-beforeEach(() => {
+beforeEach(async () => {
   simulateSmtpFailure = false
-  return userModel.destroy({ truncate: true })
+  await userModel.destroy({ truncate: true })
 })
 
 afterAll(async () => {
@@ -67,7 +69,7 @@ describe('User Registration', () => {
 
   it('Should be return success message when signup is valid', async () => {
     const response = await postUser()
-    expect(response.body.message).toBe('User created')
+    expect(response.body.message).toBe(en.user_create_success)
   })
 
   it('should save the username and password to database', async () => {
@@ -115,32 +117,23 @@ describe('User Registration', () => {
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
   })
 
-  const usernameNull = 'Username cannot be null'
-  const usernameSize = 'Must have min 4 and max 32 characters'
-  const emailNull = 'E-mail cannot be null'
-  const emailInvalid = 'E-mail is not valid'
-  const passwordNull = 'Password cannot be null'
-  const passwordSize = 'Password must be at least 6 characters'
-  const passwordPattern = 'Password must have at least 1 uppercase, 1 lowercase letter and 1 number'
-  const emailInuse = 'E-mail in use'
-
   it.each`
     field         | value              | expectedMessage
-    ${'username'} | ${null}            | ${usernameNull}
-    ${'username'} | ${'usr'}           | ${usernameSize}
-    ${'username'} | ${'a'.repeat(33)}  | ${usernameSize}
-    ${'email'}    | ${null}            | ${emailNull}
-    ${'email'}    | ${'user.mail.com'} | ${emailInvalid}
-    ${'email'}    | ${'user@gmail'}    | ${emailInvalid}
-    ${'email'}    | ${'user.com'}      | ${emailInvalid}
-    ${'password'} | ${null}            | ${passwordNull}
-    ${'password'} | ${'pass'}          | ${passwordSize}
-    ${'password'} | ${'lowercase'}     | ${passwordPattern}
-    ${'password'} | ${'UPPERCASE'}     | ${passwordPattern}
-    ${'password'} | ${'123123'}        | ${passwordPattern}
-    ${'password'} | ${'lowercase123'}  | ${passwordPattern}
-    ${'password'} | ${'UPPERCASE123'}  | ${passwordPattern}
-    ${'password'} | ${'lowerAndUPPER'} | ${passwordPattern}
+    ${'username'} | ${null}            | ${en.username_null}
+    ${'username'} | ${'usr'}           | ${en.username_size}
+    ${'username'} | ${'a'.repeat(33)}  | ${en.username_size}
+    ${'email'}    | ${null}            | ${en.email_null}
+    ${'email'}    | ${'user.mail.com'} | ${en.email_invalid}
+    ${'email'}    | ${'user@gmail'}    | ${en.email_invalid}
+    ${'email'}    | ${'user.com'}      | ${en.email_invalid}
+    ${'password'} | ${null}            | ${en.password_null}
+    ${'password'} | ${'pass'}          | ${en.password_size}
+    ${'password'} | ${'lowercase'}     | ${en.password_pattern}
+    ${'password'} | ${'UPPERCASE'}     | ${en.password_pattern}
+    ${'password'} | ${'123123'}        | ${en.password_pattern}
+    ${'password'} | ${'lowercase123'}  | ${en.password_pattern}
+    ${'password'} | ${'UPPERCASE123'}  | ${en.password_pattern}
+    ${'password'} | ${'lowerAndUPPER'} | ${en.password_pattern}
   `('Should be return message $expectedMessage when $field is $value', async ({ field, expectedMessage, value }) => {
     const user = {
       username: 'user1',
@@ -154,11 +147,11 @@ describe('User Registration', () => {
     expect(body.validationErrors[field]).toBe(expectedMessage)
   })
 
-  it(`Should be return ${emailInuse} when same email is already in use`, async () => {
+  it(`Should be return ${en.email_inuse} when same email is already in use`, async () => {
     await userModel.create({ ...validUser })
     const response = await postUser()
     const { body } = response
-    expect(body.validationErrors.email).toBe(emailInuse)
+    expect(body.validationErrors.email).toBe(en.email_inuse)
   })
 
   it('Should be return both Error when username is null and email in use', async () => {
@@ -216,11 +209,11 @@ describe('User Registration', () => {
     expect(response.status).toBe(502)
   })
 
-  it('Should return E-mail Failure when sending email fail', async () => {
+  it(`Should return ${en.email_failure} when sending email fail`, async () => {
     simulateSmtpFailure = true
 
     const response = await postUser()
-    expect(response.body.message).toBe('E-mail Failure')
+    expect(response.body.message).toBe(en.email_failure)
   })
 
   it('Should not create user when sending email failure => Rollback transaction', async () => {
@@ -231,42 +224,31 @@ describe('User Registration', () => {
     expect(user.length).toBe(0)
   })
 
-  it('Should return Validation Failure message in error response body when validation fail', async () => {
+  it(`Should return ${en.validation_fail} message in error response body when validation fail`, async () => {
     const response = await postUser({ ...validUser, username: null })
 
-    expect(response.body.message).toBe('Validation Failure')
+    expect(response.body.message).toBe(en.validation_fail)
   })
 })
 
 describe('Internationalization', () => {
-  const usernameNull = 'Tên đăng nhập dùng không được null'
-  const usernameSize = 'Tên đăng nhập phải từ 4 đến 32 kí tự'
-  const emailNull = 'E-mail không được null'
-  const emailInvalid = 'E-mail không hợp lệ'
-  const passwordNull = 'Mật Khẩu null'
-  const passwordSize = 'Mật khẩu phải có ít nhất 6 kí tự'
-  const passwordPattern = 'Mật khẩu phải có ít nhất 1 kí tự viết hoa, 1 kí tự viết thường, 1 chữ số'
-  const emailInuse = 'E-mail đã được sử dụng'
-  const userCreateSuccess = 'Tạo tài khoản thành công'
-  const validation_fail = 'Lỗi dữ liệu'
-
   it.each`
     field         | value              | expectedMessage
-    ${'username'} | ${null}            | ${usernameNull}
-    ${'username'} | ${'usr'}           | ${usernameSize}
-    ${'username'} | ${'a'.repeat(33)}  | ${usernameSize}
-    ${'email'}    | ${null}            | ${emailNull}
-    ${'email'}    | ${'user.mail.com'} | ${emailInvalid}
-    ${'email'}    | ${'user@gmail'}    | ${emailInvalid}
-    ${'email'}    | ${'user.com'}      | ${emailInvalid}
-    ${'password'} | ${null}            | ${passwordNull}
-    ${'password'} | ${'pass'}          | ${passwordSize}
-    ${'password'} | ${'lowercase'}     | ${passwordPattern}
-    ${'password'} | ${'UPPERCASE'}     | ${passwordPattern}
-    ${'password'} | ${'123123'}        | ${passwordPattern}
-    ${'password'} | ${'lowercase123'}  | ${passwordPattern}
-    ${'password'} | ${'UPPERCASE123'}  | ${passwordPattern}
-    ${'password'} | ${'lowerAndUPPER'} | ${passwordPattern}
+    ${'username'} | ${null}            | ${vn.username_null}
+    ${'username'} | ${'usr'}           | ${vn.username_size}
+    ${'username'} | ${'a'.repeat(33)}  | ${vn.username_size}
+    ${'email'}    | ${null}            | ${vn.email_null}
+    ${'email'}    | ${'user.mail.com'} | ${vn.email_invalid}
+    ${'email'}    | ${'user@gmail'}    | ${vn.email_invalid}
+    ${'email'}    | ${'user.com'}      | ${vn.email_invalid}
+    ${'password'} | ${null}            | ${vn.password_null}
+    ${'password'} | ${'pass'}          | ${vn.password_size}
+    ${'password'} | ${'lowercase'}     | ${vn.password_pattern}
+    ${'password'} | ${'UPPERCASE'}     | ${vn.password_pattern}
+    ${'password'} | ${'123123'}        | ${vn.password_pattern}
+    ${'password'} | ${'lowercase123'}  | ${vn.password_pattern}
+    ${'password'} | ${'UPPERCASE123'}  | ${vn.password_pattern}
+    ${'password'} | ${'lowerAndUPPER'} | ${vn.password_pattern}
   `('Should be return message $expectedMessage when $field is $value', async ({ field, expectedMessage, value }) => {
     const user = {
       username: 'user1',
@@ -280,11 +262,11 @@ describe('Internationalization', () => {
     expect(body.validationErrors[field]).toBe(expectedMessage)
   })
 
-  it(`Should be return ${emailInuse} when same email is already in use when language is set as Vietnamese`, async () => {
+  it(`Should be return ${vn.email_inuse} when same email is already in use when language is set as Vietnamese`, async () => {
     await userModel.create({ ...validUser })
     const response = await postUser({ ...validUser }, { language: 'vn' })
     const { body } = response
-    expect(body.validationErrors.email).toBe(emailInuse)
+    expect(body.validationErrors.email).toBe(vn.email_inuse)
   })
 
   it('Should be return both Error when username is null and email in use when language is set as Vietnamese', async () => {
@@ -299,10 +281,10 @@ describe('Internationalization', () => {
     expect(Object.keys(body.validationErrors)).toEqual(['username', 'email'])
   })
 
-  it(`Should be return ${validation_fail} message in response body when validation fail with language set as Vietnamese`, async () => {
+  it(`Should be return ${vn.validation_fail} message in response body when validation fail with language set as Vietnamese`, async () => {
     const response = await postUser({ ...validUser, username: null }, { language: 'vn' })
 
-    expect(response.body.message).toBe(validation_fail)
+    expect(response.body.message).toBe(vn.validation_fail)
   })
 })
 
@@ -353,10 +335,10 @@ describe('Account activation', () => {
 
   it.each`
     language | tokenStatus  | message
-    ${'vn'}  | ${'wrong'}   | ${'Tài khoản này đang hoạt động hoặc token không hợp lệ'}
-    ${'en'}  | ${'wrong'}   | ${'This account is either active or the token is invalid'}
-    ${'vn'}  | ${'correct'} | ${'Tài khoản đã được kích hoạt'}
-    ${'en'}  | ${'correct'} | ${'Account is activated'}
+    ${'vn'}  | ${'wrong'}   | ${vn.account_activation_failure}
+    ${'en'}  | ${'wrong'}   | ${en.account_activation_failure}
+    ${'vn'}  | ${'correct'} | ${vn.account_activation_success}
+    ${'en'}  | ${'correct'} | ${en.account_activation_success}
   `(
     'Should return ${message} when token is ${tokenStatus} and languge ${language}',
     async ({ language, tokenStatus, message }) => {
