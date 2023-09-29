@@ -82,6 +82,13 @@ class UserService {
 
     return user
   }
+
+  static updateUser = async (id, updatedBody) => {
+    const user = await UserModel.findOne({ where: { id } })
+
+    user.username = updatedBody.username
+    user.save()
+  }
 }
 
 module.exports = UserService

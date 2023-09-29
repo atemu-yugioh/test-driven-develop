@@ -98,4 +98,26 @@ describe('User Update', () => {
     })
     expect(response.status).toBe(403)
   })
+
+  it('should return status 200 when valid update request sent from authorized user', async () => {
+    const saveUser = await addUser({ ...activeUser })
+    const validUpdate = { username: 'username-updated' }
+    const response = await putUser(saveUser.id, validUpdate, {
+      auth: { email: activeUser.email, password: activeUser.password }
+    })
+
+    expect(response.status).toBe(200)
+  })
+
+  it('should update user in database when valid update request sent from authorized user', async () => {
+    const saveUser = await addUser({ ...activeUser })
+
+    const validUpdated = { username: 'username-updated' }
+
+    await putUser(saveUser.id, validUpdated, { auth: { email: activeUser.email, password: activeUser.password } })
+
+    const userJustUpdated = await userModel.findOne({ where: { id: saveUser.id } })
+
+    expect(userJustUpdated.username).toBe(validUpdated.username)
+  })
 })

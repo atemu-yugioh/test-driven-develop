@@ -6,6 +6,7 @@ const asyncHandler = require('../helper/asyncHandler')
 const { check } = require('express-validator')
 const UserService = require('./userService')
 const pagination = require('../middleware/pagination')
+const basicAuthentication = require('../middleware/basicAuthentication')
 
 router.post(
   '',
@@ -47,6 +48,6 @@ router.get('', pagination, asyncHandler(userController.getUsers))
 
 router.get('/:id', asyncHandler(userController.getUser))
 
-router.patch('/:id', asyncHandler(userController.update))
+router.patch('/:id', basicAuthentication, asyncHandler(userController.update))
 
 module.exports = router
