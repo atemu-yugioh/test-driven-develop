@@ -28,16 +28,25 @@ const addUser = async (user = { ...activeUser }) => {
   return await userModel.create(user)
 }
 
-const putUser = (id = 5, body = null, options = {}) => {
+const putUser = async (id = 5, body = null, options = {}) => {
   const agent = request(app).patch(`/api/1.0/users/${id}`)
+  let token
 
   if (options.language) {
     agent.set('Accept-language', options.language)
   }
 
   if (options.auth) {
-    const { email, password } = options.auth
-    agent.auth(email, password, { type: 'basic' })
+    const response = await request(app).post('/api/1.0/auth').send(options.auth)
+    token = response.body.token
+  }
+
+  if (options.token) {
+    token = options.token
+  }
+
+  if (token) {
+    agent.set('authorization', `Bearer ${token}`)
   }
 
   return agent.send(body)
@@ -45,7 +54,6 @@ const putUser = (id = 5, body = null, options = {}) => {
 
 describe('User Update', () => {
   it('should return status 403 when request sent without basic authorization', async () => {
-    const id = 5
     const response = await putUser()
     expect(response.status).toBe(403)
   })
@@ -119,5 +127,9 @@ describe('User Update', () => {
     const userJustUpdated = await userModel.findOne({ where: { id: saveUser.id } })
 
     expect(userJustUpdated.username).toBe(validUpdated.username)
+  })
+  it('should return status 403 when token is not valid', async () => {
+    const response = await putUser(5, null, { token: '123' })
+    expect(response.status).toBe(403)
   })
 })
