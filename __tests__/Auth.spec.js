@@ -3,6 +3,8 @@ const app = require('../src/app')
 const UserModel = require('../src/user/userModel')
 const sequelize = require('../src/config/database')
 const bcrypt = require('bcrypt')
+const en = require('../locales/en/translation.json')
+const vn = require('../locales/vn/translation.json')
 
 beforeAll(async () => {
   await sequelize.sync()
@@ -80,8 +82,8 @@ describe('Authentication', () => {
 
   it.each`
     language | message
-    ${'en'}  | ${'Incorrect credential'}
-    ${'vn'}  | ${'Thông tin xác thực không đúng'}
+    ${'en'}  | ${en.authentication_failure}
+    ${'vn'}  | ${vn.authentication_failure}
   `(
     'Should return message $message when authentication fail with language set is $language',
     async ({ language, message }) => {
@@ -119,8 +121,8 @@ describe('Authentication', () => {
 
   it.each`
     language | message
-    ${'en'}  | ${'Account is inactive'}
-    ${'vn'}  | ${'Tài khoản chưa được kich hoạt'}
+    ${'en'}  | ${en.inactive_authentication_failure}
+    ${'vn'}  | ${vn.inactive_authentication_failure}
   `(
     'Should return $message when authentication inactive account with language is $language',
     async ({ language, message }) => {

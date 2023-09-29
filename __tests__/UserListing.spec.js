@@ -2,13 +2,15 @@ const request = require('supertest')
 const app = require('../src/app')
 const userModel = require('../src/user/userModel')
 const sequelize = require('../src/config/database')
+const en = require('../locales/en/translation.json')
+const vn = require('../locales/vn/translation.json')
 
 beforeAll(async () => {
   await sequelize.sync()
 })
 
-beforeEach(() => {
-  return userModel.destroy({ truncate: true })
+beforeEach(async () => {
+  await userModel.destroy({ truncate: true })
 })
 
 const getUsers = () => {
@@ -153,8 +155,8 @@ describe('Detail User', () => {
 
   it.each`
     language | message
-    ${'vn'}  | ${'Người dùng không tồn tại'}
-    ${'en'}  | ${'User not found'}
+    ${'vn'}  | ${vn.user_not_found}
+    ${'en'}  | ${en.user_not_found}
   `('Should return $message for unknow user when language is set to $language', async ({ language, message }) => {
     const response = await getUser().set('Accept-Language', language)
 
