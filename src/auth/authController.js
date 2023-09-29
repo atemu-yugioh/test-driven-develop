@@ -3,6 +3,7 @@ const AuthenticationException = require('./AuthenticationException')
 const bcrypt = require('bcrypt')
 const ForbiddenException = require('../errors/ForbiddenException')
 const { validationResult } = require('express-validator')
+const TokenService = require('./TokenService')
 
 class AuthController {
   auth = async (req, res, next) => {
@@ -30,9 +31,11 @@ class AuthController {
       return next(new ForbiddenException())
     }
 
+    const token = await TokenService.createToken(user)
     return res.status(200).json({
       id: user.id,
-      username: user.username
+      username: user.username,
+      token
     })
   }
 }

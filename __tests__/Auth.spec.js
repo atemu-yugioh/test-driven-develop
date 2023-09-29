@@ -51,7 +51,7 @@ describe('Authentication', () => {
     expect(response.status).toBe(200)
   })
 
-  it('Should return only user id and username when login success', async () => {
+  it('Should return only user id, username and token when login success', async () => {
     const user = await addUser()
 
     const response = await postAuthentication(correctCredential)
@@ -60,12 +60,22 @@ describe('Authentication', () => {
 
     expect(body.id).toBe(user.id)
     expect(body.username).toBe(user.username)
-    expect(Object.keys(body)).toEqual(['id', 'username'])
+    expect(Object.keys(body)).toEqual(['id', 'username', 'token'])
   })
 
   it('should return status 401 when user not exist', async () => {
     const response = await postAuthentication(correctCredential)
     expect(response.status).toBe(401)
+  })
+
+  it('should return token in body when credential are correct', async () => {
+    await addUser()
+
+    const response = await postAuthentication(correctCredential)
+
+    const { body } = response
+
+    expect(body.token).not.toBeUndefined()
   })
 
   it('should return proper error body when authentication fail', async () => {
