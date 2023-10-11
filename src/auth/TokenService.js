@@ -1,3 +1,4 @@
+const { async } = require('fast-glob')
 const { randomString } = require('../shared/generator')
 const TokenModel = require('./tokenModel')
 
@@ -14,7 +15,11 @@ class TokenService {
   static verifyToken = async (token) => {
     const tokenInDB = await TokenModel.findOne({ where: { token } })
 
-    return { id: Number(tokenInDB.userId) }
+    return { id: tokenInDB.userId, token: tokenInDB.token }
+  }
+
+  static deleteToken = async (token) => {
+    return await TokenModel.destroy({ where: { token } })
   }
 }
 
