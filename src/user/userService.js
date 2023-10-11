@@ -1,5 +1,4 @@
 const bcrypt = require('bcrypt')
-const crypto = require('crypto')
 const UserModel = require('./userModel')
 const EmailService = require('../email/emailService')
 const sequelize = require('../config/database')
@@ -7,10 +6,7 @@ const Sequelize = require('sequelize')
 const { EmailException } = require('../email/emailException')
 const InvalidTokenException = require('./InvalidTokenException')
 const UserNotFoundException = require('./userNotFoundException')
-
-const generateToken = (length) => {
-  return crypto.randomBytes(length).toString('hex')
-}
+const { randomString } = require('../shared/generator')
 
 const attributes = ['id', 'username', 'email']
 
@@ -21,7 +17,7 @@ class UserService {
       username,
       password: passwordHash,
       email,
-      activationToken: generateToken(16)
+      activationToken: randomString(16)
     }
     const transaction = await sequelize.transaction()
     await UserModel.create(userData, { transaction })
