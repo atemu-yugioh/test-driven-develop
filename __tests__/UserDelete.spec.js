@@ -12,7 +12,7 @@ beforeAll(async () => {
 })
 
 beforeEach(async () => {
-  await userModel.destroy({ truncate: true })
+  await userModel.destroy({ truncate: { cascade: true } })
 })
 const activeUser = {
   username: 'user1',
@@ -120,5 +120,33 @@ describe('Delete User', () => {
     // get user
     const storedUser = await userModel.findOne({ where: { id: savedUser.id } })
     expect(storedUser).toBeNull()
+  })
+
+  it('should deletes token from database when delete user request sent from authorized user', async () => {
+    // register and login
+    const savedUser = await addUser()
+
+    const token = await postLogin({ ...correctCredential })
+
+    // delete user
+    await deleteUser(savedUser.id, { token })
+
+    // find token
+    const storedToken = await tokenModel.findOne({ where: { token } })
+    expect(storedToken).toBeNull()
+  })
+
+  it('should deletes all token from database when delete user request sent from authorized user', async () => {
+    // register and login
+    const savedUser = await addUser()
+
+    const token = await postLogin({ ...correctCredential })
+
+    // delete user
+    await deleteUser(savedUser.id, { token })
+
+    // find token
+    const storedToken = await tokenModel.findAll({ where: { userId: savedUser.id } })
+    expect(storedToken.length).toBeFalsy()
   })
 })

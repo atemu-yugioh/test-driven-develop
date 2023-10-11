@@ -1,5 +1,6 @@
 const Sequelize = require('sequelize')
 const sequelize = require('../config/database')
+const TokenModel = require('../auth/tokenModel')
 
 const Model = Sequelize.Model
 
@@ -29,5 +30,8 @@ UserModel.init(
     modelName: 'user'
   }
 )
+
+// onDelete: 'cascade' => khi user bị xóa thì tất cả các token relationship với user cũng bị xóa hết
+UserModel.hasMany(TokenModel, { onDelete: 'cascade', foreignKey: 'userId' })
 
 module.exports = UserModel
