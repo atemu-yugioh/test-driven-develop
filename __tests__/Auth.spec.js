@@ -195,3 +195,54 @@ describe('Logout', () => {
     expect(storedToken).toBeNull()
   })
 })
+
+describe('Token Expiration', () => {
+  const putUser = async (id = 5, body = null, options = {}) => {
+    const agent = request(app).patch(`/api/1.0/users/${id}`)
+
+    if (options.token) {
+      agent.set('authorization', `Bearer ${options.token}`)
+    }
+
+    return agent.send(body)
+  }
+
+  it('should returns 403 when token is older than 1 week', async () => {
+    // register and create token for user with lastUsedAt = oneWeekAgo
+    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 61 * 1000)
+    const savedUser = await addUser()
+    const tokenFake = 'tokenValidFake'
+    await tokenModel.create({
+      token: tokenFake,
+      userId: savedUser.id,
+      lastUsedAt: oneWeekAgo
+    })
+
+    // call api update user with token expired
+    const validateUpdate = { username: 'user-update' }
+    const response = await putUser(savedUser.id, validateUpdate, { token: tokenFake })
+    expect(response.status).toBe(403)
+  })
+
+  it('should refreshes lastUsedAt when unexpired token is used', async () => {
+    // register and create token for user with lastUsedAt = fourDayAgo
+    const rightTimeBeforeRequest = new Date().getTime()
+    const fourDayAgo = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000)
+    const savedUser = await addUser()
+    const tokenFake = 'tokenValidFake'
+    await tokenModel.create({
+      token: tokenFake,
+      userId: savedUser.id,
+      lastUsedAt: fourDayAgo
+    })
+
+    // call api update user with token expired
+    const validateUpdate = { username: 'user-update' }
+    await putUser(savedUser.id, validateUpdate, { token: tokenFake })
+
+    // get token of user
+    const response = await tokenModel.findOne({ where: { token: tokenFake } })
+
+    expect(response.lastUsedAt.getTime()).toBeGreaterThanOrEqual(rightTimeBeforeRequest)
+  })
+})

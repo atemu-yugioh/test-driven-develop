@@ -12,11 +12,15 @@ TokenModel.init(
     },
     userId: {
       type: Sequelize.INTEGER
+    },
+    lastUsedAt: {
+      type: Sequelize.DATE
     }
   },
   {
     sequelize,
-    modelName: 'token'
+    modelName: 'token',
+    timestamps: false
   }
 )
 
