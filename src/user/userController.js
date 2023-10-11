@@ -60,6 +60,18 @@ class UserController {
 
     return res.send()
   }
+
+  delete = async (req, res, next) => {
+    const { authenticateUser } = req
+
+    if (!authenticateUser || authenticateUser.id !== Number(req.params.id)) {
+      return next(new ForbiddenException('unauthroized_user_delete'))
+    }
+
+    await UserService.deleteUser(authenticateUser.id)
+
+    return res.send()
+  }
 }
 
 module.exports = new UserController()

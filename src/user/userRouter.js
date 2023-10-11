@@ -51,4 +51,6 @@ router.get('/:id', asyncHandler(userController.getUser))
 
 router.patch('/:id', tokenAuthentication, asyncHandler(userController.update))
 
+router.delete('/:id', tokenAuthentication, asyncHandler(userController.delete))
+
 module.exports = router

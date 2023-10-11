@@ -15,5 +15,6 @@
   "user_not_found": "Người dùng không tồn tại",
   "authentication_failure": "Thông tin xác thực không đúng",
   "inactive_authentication_failure": "Tài khoản chưa được kich hoạt",
-  "unauthroized_user_update": "Bạn không có quyền cập nhật thông tin người dùng"
+  "unauthroized_user_update": "Bạn không có quyền cập nhật thông tin người dùng",
+  "unauthroized_user_delete": "Bạn không có quyền xóa thông tin người dùng"
 }
