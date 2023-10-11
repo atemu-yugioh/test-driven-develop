@@ -1,12 +1,20 @@
-const jwt = require('jsonwebtoken')
+const { randomString } = require('../shared/generator')
+const TokenModel = require('./tokenModel')
 
 class TokenService {
   static createToken = async (user) => {
-    return jwt.sign({ id: user.id }, 'this-is-secret-key')
+    const token = randomString(32)
+    await TokenModel.create({
+      token,
+      userId: user.id
+    })
+    return token
   }
 
   static verifyToken = async (token) => {
-    return await jwt.verify(token, 'this-is-secret-key')
+    const tokenInDB = await TokenModel.findOne({ where: { token } })
+
+    return { id: Number(tokenInDB.userId) }
   }
 }
 
