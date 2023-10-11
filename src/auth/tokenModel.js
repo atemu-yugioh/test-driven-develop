@@ -11,7 +11,7 @@ TokenModel.init(
       type: Sequelize.STRING
     },
     userId: {
-      type: Sequelize.STRING
+      type: Sequelize.INTEGER
     }
   },
   {

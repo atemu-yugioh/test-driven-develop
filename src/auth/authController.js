@@ -38,6 +38,18 @@ class AuthController {
       token
     })
   }
+
+  logout = async (req, res, next) => {
+    const { authenticateUser } = req
+
+    if (!authenticateUser || !authenticateUser.token) {
+      return next(new AuthenticationException())
+    }
+
+    await TokenService.deleteToken(authenticateUser.token)
+
+    return res.send()
+  }
 }
 
 module.exports = new AuthController()

@@ -5,6 +5,7 @@ const sequelize = require('../src/config/database')
 const bcrypt = require('bcrypt')
 const en = require('../locales/en/translation.json')
 const vn = require('../locales/vn/translation.json')
+const tokenModel = require('../src/auth/tokenModel')
 
 beforeAll(async () => {
   await sequelize.sync()
@@ -40,6 +41,16 @@ const postAuthentication = async (credential, options = {}) => {
   }
 
   return await agent.send(credential)
+}
+
+const postLogout = async (options = {}) => {
+  const agent = request(app).post('/api/1.0/logout')
+
+  if (options.token) {
+    agent.set('authorization', `Bearer ${options.token}`)
+  }
+
+  return agent.send()
 }
 
 describe('Authentication', () => {
@@ -158,5 +169,29 @@ describe('Authentication', () => {
     const response = await postAuthentication({ ...correctCredential, password: 'invalidPassword' })
 
     expect(response.status).toBe(401)
+  })
+})
+
+describe('Logout', () => {
+  it('should return status 401 when unauthorized request send for logout', async () => {
+    const response = await postLogout()
+    expect(response.status).toBe(401)
+  })
+
+  it('should remove token from database', async () => {
+    // register and login
+    await addUser()
+    const response = await postAuthentication(correctCredential)
+
+    const { body } = response
+
+    const token = body.token
+
+    // logout with valid token
+    await postLogout({ token })
+
+    const storedToken = await tokenModel.findOne({ where: { token } })
+
+    expect(storedToken).toBeNull()
   })
 })
