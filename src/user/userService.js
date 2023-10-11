@@ -91,6 +91,10 @@ class UserService {
     user.username = updatedBody.username
     user.save()
   }
+
+  static deleteUser = async (id) => {
+    return await UserModel.destroy({ where: { id } })
+  }
 }
 
 module.exports = UserService
