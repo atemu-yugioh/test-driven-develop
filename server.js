@@ -1,4 +1,5 @@
 const app = require('./src/app')
+const TokenService = require('./src/auth/TokenService')
 const sequelize = require('./src/config/database')
 const UserModel = require('./src/user/userModel')
 const bcrypt = require('bcrypt')
@@ -14,6 +15,8 @@ const addUsers = async (activeUserCount, inactiveUserCount = 0) => {
     })
   }
 }
+
+TokenService.scheduleCleanup()
 
 sequelize.sync({ force: true }).then(async () => {
   await addUsers(11)

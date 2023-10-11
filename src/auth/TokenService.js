@@ -33,6 +33,18 @@ class TokenService {
   static deleteToken = async (token) => {
     return await TokenModel.destroy({ where: { token } })
   }
+
+  static scheduleCleanup = () => {
+    setInterval(async () => {
+      await TokenModel.destroy({
+        where: {
+          lastUsedAt: {
+            [Sequelize.Op.lt]: ONE_WEEK_AGO
+          }
+        }
+      })
+    }, 1000)
+  }
 }
 
 module.exports = TokenService
